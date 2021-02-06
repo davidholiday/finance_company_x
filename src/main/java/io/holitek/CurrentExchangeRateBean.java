@@ -54,16 +54,16 @@ public class CurrentExchangeRateBean {
             );
 
             LOG.info("bean may be corrupted - resetting ...");
-            clearExchangeRates();
+            resetBean();
         }
 
         return successFlag;
     }
 
     /**
-     *
+     * resets all bean variables to their default values
      */
-    public void clearExchangeRates() {
+    public void resetBean() {
         buildID = ""; // purposefully not using the setter...
         exchangeRateMap.clear();
     }
