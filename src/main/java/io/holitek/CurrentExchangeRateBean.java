@@ -14,15 +14,16 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- *
+ * cache bean that stores and provides means to access current exchange rates
  */
 public class CurrentExchangeRateBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(CurrentExchangeRateBean.class);
 
-    private String buildID = "";
+    private String buildID = new String();
     private Map<String, Double> exchangeRateMap = new HashMap<>();
     private ObjectMapper objectMapper = new ObjectMapper();
+
 
     /**
      *
@@ -30,20 +31,25 @@ public class CurrentExchangeRateBean {
      */
     public void setBuildID(String buildID) { this.buildID = buildID; }
 
+
     /**
      *
      * @return
      */
     public String getBuildID() { return this.buildID; }
 
+
     /**
-     *
+     * clears all exchange rates from bean
      */
     public void clearExchangeRateMap() { exchangeRateMap.clear(); }
 
+
     /**
+     * replaces whatever exchange rates are currently stored with rates provided by caller.
      *
      * @param exchangeRateJson
+     * @return boolean indicating whether or not import was successful
      */
     public boolean setExchangeRateMap(String exchangeRateJson) {
         boolean faultFlag = false;
@@ -53,15 +59,19 @@ public class CurrentExchangeRateBean {
                         exchangeRateJson,
                         new TypeReference<Map<String, Double>>() {}
                     );
+
+            exchangeRateMap = result;
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            LOG.error("something went wrong importing exchangeRateJson", e);
             faultFlag = true;
         }
 
         return faultFlag;
     }
 
+
     /**
+     * returns exchange rates cached by this bean as Json.
      *
      * @return
      */
@@ -78,6 +88,7 @@ public class CurrentExchangeRateBean {
 
         return returnOptional;
     }
+
 
     /**
      *
