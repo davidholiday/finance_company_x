@@ -1,6 +1,8 @@
 package io.holitek;
 
 
+import java.beans.Introspector;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -9,6 +11,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CurrentExchangeRateBean {
 
+    public static final String NAMESPACE_KEY = Introspector.decapitalize(CurrentExchangeRateBean.class.getSimpleName());
     private static final Logger LOG = LoggerFactory.getLogger(CurrentExchangeRateBean.class);
 
     private String buildID = new String();
@@ -71,22 +76,30 @@ public class CurrentExchangeRateBean {
 
 
     /**
-     * returns exchange rates cached by this bean as Json.
+     * default message handler.
+     *
+     * @param exchange
+     */
+    public void getExchangeRatesAsJason(Exchange exchange) {
+        String exchangeRatesAsJson = getExchangeRatesAsJson();
+        exchange.getIn().setBody(exchangeRatesAsJson);
+    }
+
+
+    /**
      *
      * @return
      */
-    public Optional<String> getExchangeRatesAsJson() {
-        Optional<String> returnOptional;
+    public String getExchangeRatesAsJson() {
+        String rv = new String();
 
         try {
-            String exchangeRateJson = objectMapper.writeValueAsString(exchangeRateMap);
-            returnOptional = Optional.of(exchangeRateJson);
+            rv = objectMapper.writeValueAsString(exchangeRateMap);
         } catch (JsonProcessingException e) {
-            returnOptional = Optional.empty();
             LOG.error("something went wrong serializing cached exchange data into json", e);
         }
 
-        return returnOptional;
+        return rv;
     }
 
 
