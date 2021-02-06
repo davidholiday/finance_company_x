@@ -7,9 +7,9 @@ public class CurrencyDataPollingConsumerRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("{{currency_data_polling_consumer_from}}")
-            .bean("myBean", "hello")
-            .log("${body}")
-            .bean("myBean", "bye")
+                // grab current build ID
+                // choice on current build ID and build ID in bean
+                    // if buildID delta - update currentexchangeratebean-er-ino
             .log("${body}");
     }
 }

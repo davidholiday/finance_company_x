@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.slf4j.Logger;
@@ -44,8 +45,20 @@ public class CurrentExchangeRateBean {
      *
      * @param exchangeRateJson
      */
-    public void setExchangeRateMap(String exchangeRateJson) {
-        // do stuff
+    public boolean setExchangeRateMap(String exchangeRateJson) {
+        boolean faultFlag = false;
+
+        try {
+            Map<String, Double> result = objectMapper.readValue(
+                        exchangeRateJson,
+                        new TypeReference<Map<String, Double>>() {}
+                    );
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            faultFlag = true;
+        }
+
+        return faultFlag;
     }
 
     /**
@@ -53,7 +66,6 @@ public class CurrentExchangeRateBean {
      * @return
      */
     public Optional<String> getExchangeRatesAsJson() {
-
         Optional<String> returnOptional;
 
         try {
