@@ -36,6 +36,8 @@ public class CurrentExchangeRateBean {
     //
 
     /**
+     * will attempt to set exchange rates given buildID and json payload. on fault, bean will reset itself to prevent
+     * risk of reporting corrupted or malformed data.
      *
      * @param buildID
      * @return
@@ -50,6 +52,9 @@ public class CurrentExchangeRateBean {
                     setBuildIdSuccessFlag,
                     setExchangeRateMapSuccessFlag
             );
+
+            LOG.info("bean may be corrupted - resetting ...");
+            clearExchangeRates();
         }
 
         return successFlag;
@@ -79,9 +84,7 @@ public class CurrentExchangeRateBean {
         String buildID = getBuildID();
         String exchangeRatesAsJson = getExchangeRatesAsJson();
 
-        if (buildID.equals("") && exchangeRatesAsJson.equals("{}") == false) {
-            throw new IllegalStateException("")
-        }
+        assert (buildID.equals("") && exchangeRatesAsJson.equals("{}") == false) == false;
 
         exchange.getIn().setHeader(BUILD_ID_HEADER_KEY, buildID);
 
