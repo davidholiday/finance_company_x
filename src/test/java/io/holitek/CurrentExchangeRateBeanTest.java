@@ -56,15 +56,46 @@ public class CurrentExchangeRateBeanTest extends CamelTestSupport {
     }
 
     @Test
-    @DisplayName("checks getters/setters for buildID")
-    public void testBuildID() throws Exception {
+    @DisplayName("checks happy path behavior of buildID setter")
+    public void testSetBuildIdHappyPath() throws Exception {
+        CurrentExchangeRateBean currentExchangeRateBean = (
+                CurrentExchangeRateBean) context().getRegistry().lookupByName(CurrentExchangeRateBean.NAMESPACE_KEY);
 
+        String expectedBuildID = "foo";
+        boolean successFlag = currentExchangeRateBean.setBuildID(expectedBuildID);
+        Assertions.assertTrue(successFlag);
 
-
-        getMockEndpoint("mock:result").expectedBodiesReceived("{}");
-        template.sendBody("direct:start", "");
-        assertMockEndpointsSatisfied();
+        String actualBuildID = currentExchangeRateBean.getBuildID();
+        Assertions.assertEquals(expectedBuildID, actualBuildID, "we should get back what we put in!");
     }
+
+    @Test
+    @DisplayName("checks buildID setter prevents empty String from being set ")
+    public void testSetBuildIdErrorPathEmptyString() throws Exception {
+
+        // setup
+        //
+        String expectedBuildID = "foo";
+        CurrentExchangeRateBean currentExchangeRateBean = (
+                CurrentExchangeRateBean) context().getRegistry().lookupByName(CurrentExchangeRateBean.NAMESPACE_KEY);
+
+        // this way (vs junit way) because this is to validate programmer assumption that expected condition exists.
+        assert currentExchangeRateBean.setBuildID(expectedBuildID);
+
+
+        // test
+        //
+        boolean successFlag = currentExchangeRateBean.setBuildID("");
+        Assertions.assertFalse(successFlag);
+
+        String actualBuildID = currentExchangeRateBean.getBuildID();
+        Assertions.assertEquals(
+                expectedBuildID,
+                actualBuildID,
+                "buildID value should not have changed on setBuildID fault"
+        );
+    }
+
 
 }
 

@@ -64,7 +64,7 @@ public class CurrentExchangeRateBean {
      *
      */
     public void clearExchangeRates() {
-        buildID = "";
+        buildID = ""; // purposefully not using the setter...
         exchangeRateMap.clear();
     }
 
@@ -130,7 +130,9 @@ public class CurrentExchangeRateBean {
     //
 
     /**
-     * setter for buildID will prevent caller from setting empty value.
+     * setter for buildID will prevent caller from setting empty value. the reason is it's possible to have a buildID
+     * that points to an empty data set but it shouldn't be possible for there to be a populated data set that doesn't
+     * have a unique buildID. the data came *from* somewhere and absent that context, it's meaningless.
      *
      * @param buildID
      */
