@@ -22,8 +22,10 @@ import org.slf4j.LoggerFactory;
  */
 public class CurrentExchangeRateBean {
 
-    public static final String NAMESPACE_KEY = Introspector.decapitalize(CurrentExchangeRateBean.class.getSimpleName());
     private static final Logger LOG = LoggerFactory.getLogger(CurrentExchangeRateBean.class);
+
+    public static final String NAMESPACE_KEY = Introspector.decapitalize(CurrentExchangeRateBean.class.getSimpleName());
+    public static final String BUILD_ID_HEADER_KEY = "buildID";
 
     private String buildID = new String();
     private Map<String, Double> exchangeRateMap = new HashMap<>();
@@ -76,11 +78,15 @@ public class CurrentExchangeRateBean {
 
 
     /**
-     * default message handler.
+     * default message handler. sets message header to current buildID. sets message body to Json map of
+     * exchange rates.
      *
      * @param exchange
      */
-    public void getExchangeRatesAsJason(Exchange exchange) {
+    public void getExchangeRatesAsJson(Exchange exchange) {
+        String buildID = getBuildID();
+        exchange.getIn().setHeader(BUILD_ID_HEADER_KEY, buildID);
+
         String exchangeRatesAsJson = getExchangeRatesAsJson();
         exchange.getIn().setBody(exchangeRatesAsJson);
     }

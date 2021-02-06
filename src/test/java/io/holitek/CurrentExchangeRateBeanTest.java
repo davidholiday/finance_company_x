@@ -49,9 +49,48 @@ public class CurrentExchangeRateBeanTest extends CamelTestSupport {
     @Test
     @DisplayName("checks default behavior")
     public void testHappyPath() throws Exception {
+        getMockEndpoint("mock:result").expectedHeaderReceived(CurrentExchangeRateBean.BUILD_ID_HEADER_KEY, "");
+        getMockEndpoint("mock:result").expectedBodiesReceived("{}");
+        template.sendBody("direct:start", "");
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    @DisplayName("checks getters/setters for buildID")
+    public void testBuildID() throws Exception {
+
+
+
         getMockEndpoint("mock:result").expectedBodiesReceived("{}");
         template.sendBody("direct:start", "");
         assertMockEndpointsSatisfied();
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
