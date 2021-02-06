@@ -75,6 +75,16 @@ public class CurrentExchangeRateBean {
     public String getBuildID() { return this.buildID; }
 
     /**
+     *
+     * @return
+     */
+    public Map<String, Double> getExchangeRateMap() {
+        Map<String, Double> exchangeRateMapClone = new HashMap<>();
+        exchangeRateMapClone.putAll(this.exchangeRateMap);
+        return exchangeRateMapClone;
+    }
+
+    /**
      * default message handler. sets message header to current buildID. sets message body to Json map of
      * exchange rates.
      *
@@ -138,7 +148,7 @@ public class CurrentExchangeRateBean {
      */
     boolean setBuildID(String buildID) {
         boolean successFlag = true;
-        if (buildID.isEmpty()) {
+        if (buildID == null || buildID.isEmpty()) {
             successFlag = false;
         } else {
             this.buildID = buildID;
