@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Handler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,50 +32,42 @@ public class CurrentExchangeRateBean {
     private ObjectMapper objectMapper = new ObjectMapper();
 
 
+    // PUBLIC
+    //
+
     /**
      *
      * @param buildID
+     * @return
      */
-    public void setBuildID(String buildID) { this.buildID = buildID; }
+    public boolean setExchangeRates(String buildID, String exchangeRateJson) {
+        boolean setBuildIdSuccessFlag = setBuildID(buildID);
+        boolean setExchangeRateMapSuccessFlag = setExchangeRateMap(exchangeRateJson);
+        boolean successFlag = setBuildIdSuccessFlag && setExchangeRateMapSuccessFlag;
+        if (successFlag == false) {
+            LOG.error("something went wrong setting exchange rates. " +
+                      "setBuildIdSuccessFlag was: {}  setExchangeRateMapSuccessFlag was: {}",
+                    setBuildIdSuccessFlag,
+                    setExchangeRateMapSuccessFlag
+            );
+        }
 
+        return successFlag;
+    }
+
+    /**
+     *
+     */
+    public void clearExchangeRates() {
+        buildID = "";
+        exchangeRateMap.clear();
+    }
 
     /**
      *
      * @return
      */
     public String getBuildID() { return this.buildID; }
-
-
-    /**
-     * clears all exchange rates from bean
-     */
-    public void clearExchangeRateMap() { exchangeRateMap.clear(); }
-
-
-    /**
-     * replaces whatever exchange rates are currently stored with rates provided by caller.
-     *
-     * @param exchangeRateJson
-     * @return boolean indicating whether or not import was successful
-     */
-    public boolean setExchangeRateMap(String exchangeRateJson) {
-        boolean faultFlag = false;
-
-        try {
-            Map<String, Double> result = objectMapper.readValue(
-                        exchangeRateJson,
-                        new TypeReference<Map<String, Double>>() {}
-                    );
-
-            exchangeRateMap = result;
-        } catch (JsonProcessingException e) {
-            LOG.error("something went wrong importing exchangeRateJson", e);
-            faultFlag = true;
-        }
-
-        return faultFlag;
-    }
-
 
     /**
      * default message handler. sets message header to current buildID. sets message body to Json map of
@@ -85,12 +77,16 @@ public class CurrentExchangeRateBean {
      */
     public void getExchangeRatesAsJson(Exchange exchange) {
         String buildID = getBuildID();
+        String exchangeRatesAsJson = getExchangeRatesAsJson();
+
+        if (buildID.equals("") && exchangeRatesAsJson.equals("{}") == false) {
+            throw new IllegalStateException("")
+        }
+
         exchange.getIn().setHeader(BUILD_ID_HEADER_KEY, buildID);
 
-        String exchangeRatesAsJson = getExchangeRatesAsJson();
         exchange.getIn().setBody(exchangeRatesAsJson);
     }
-
 
     /**
      *
@@ -108,7 +104,6 @@ public class CurrentExchangeRateBean {
         return rv;
     }
 
-
     /**
      *
      * @param key
@@ -125,6 +120,50 @@ public class CurrentExchangeRateBean {
         }
 
         return returnOptional;
+    }
+
+
+    // PACKAGE PROTECTED
+    //
+
+    /**
+     * setter for buildID will prevent caller from setting empty value.
+     *
+     * @param buildID
+     */
+    boolean setBuildID(String buildID) {
+        boolean successFlag = true;
+        if (buildID.isEmpty()) {
+            successFlag = false;
+        } else {
+            this.buildID = buildID;
+        }
+
+        return successFlag;
+    }
+
+    /**
+     * replaces whatever exchange rates are currently stored with rates provided by caller.
+     *
+     * @param exchangeRateJson
+     * @return boolean indicating whether or not import was successful
+     */
+    boolean setExchangeRateMap(String exchangeRateJson) {
+        boolean successFlag = true;
+
+        try {
+            Map<String, Double> result = objectMapper.readValue(
+                        exchangeRateJson,
+                        new TypeReference<Map<String, Double>>() {}
+                    );
+
+            exchangeRateMap = result;
+        } catch (JsonProcessingException e) {
+            LOG.error("something went wrong importing exchangeRateJson", e);
+            successFlag = false;
+        }
+
+        return successFlag;
     }
 
 }
