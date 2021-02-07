@@ -76,7 +76,7 @@ public class ExchangeRateBeanTest extends CamelTestSupport {
     @Test
     @DisplayName("checks that bean in default state properly handles exchange messages ")
     public void testExchangeHandlerHappyPath() throws Exception {
-        getMockEndpoint("mock:result").expectedHeaderReceived(ExchangeRateBean.BUILD_ID_HEADER_KEY, "");
+        getMockEndpoint("mock:result").expectedHeaderReceived(ExchangeRateBean.CURRENT_BUILD_ID_HEADER_KEY, "");
         getMockEndpoint("mock:result").expectedBodiesReceived("{}");
         template.sendBody("direct:start", "");
         assertMockEndpointsSatisfied();

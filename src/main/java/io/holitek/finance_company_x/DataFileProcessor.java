@@ -1,60 +1,69 @@
 package io.holitek.finance_company_x;
 
 
+import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
+
+import com.jayway.jsonpath.Option;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.beans.Introspector;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
 
+import static io.holitek.finance_company_x.Helpers.fileExists;
+
+import static io.holitek.finance_company_x.BuildIdFileProcessor.BUILD_ID_FILE_CONTENTS_HEADER_KEY;
+
+
+/**
+ * handles parsing of data files into exchange header
+ */
 public class DataFileProcessor implements Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataFileProcessor.class);
 
     public static final String NAMESPACE_KEY = Introspector.decapitalize(DataFileProcessor.class.getSimpleName());
 
+    public static final String DATA_FILE_CONTENTS_HEADER_KEY = "dataFileContents";
 
+    /**
+     *
+     * @param exchange
+     * @throws Exception
+     */
     @Override
     public void process(Exchange exchange) throws Exception {
+
+        // this to prevent the json parser from going boom when a key isn't found
+        Configuration jsonPathConf = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
 
         String directory = (String)exchange.getMessage()
                                            .getHeader(CurrencyDataPollingConsumerRoute.DATA_DIRECTORY_HEADER_KEY);
 
-        String buildIdFileAsJson = (String)exchange.getMessage().getBody();
-        LOG.info("buildIdFileAsJson is: {}", buildIdFileAsJson);
-        // this will throw exception if key not found
-        String dataFileName = JsonPath.read(buildIdFileAsJson, "$.Filename");
+        String buildIdFileAsJson = (String)exchange.getMessage().getHeader(BUILD_ID_FILE_CONTENTS_HEADER_KEY);
 
-        Path dataFilePath = Paths.get(directory, dataFileName);
-        if (Files.exists(dataFilePath) == false) {
-            LOG.warn("could not find dataFilePath file {}. no action taken", dataFilePath);
+        Optional<String> dataFileNameOptional = Optional.ofNullable(
+                JsonPath.using(jsonPathConf).parse(buildIdFileAsJson).read("$.FileName")
+        );
+
+        // update exchange rates iff data file exists and is valid json
+        // TODO add more validation of dataFileContentsJson as needed...
+        if (dataFileNameOptional.isEmpty() || fileExists(directory, dataFileNameOptional.get()) == false) {
+            LOG.error("data filename can't can't be resolved from buildID file contents");
         } else {
-            String buildIdJson = new String(Files.readAllBytes(dataFilePath));
-            exchange.getMessage().setBody(buildIdJson);
+            Path dataFilePath = Paths.get(directory, dataFileNameOptional.get());
+            String dataFileContentsJson = new String(Files.readAllBytes(dataFilePath));
+            exchange.getMessage().setHeader(DATA_FILE_CONTENTS_HEADER_KEY, dataFileContentsJson);
         }
-
 
     }
 
 }
-
-
-//        if (buildFileNameOptional.isEmpty() || fileExists(directory, buildFileNameOptional.get()) == false) {
-//                LOG.error("buildID_filename property can't be resolved");
-//                } else {
-//                Path filePath = Paths.get(directory, buildFileNameOptional.get());
-//                String buildIdJson = new String(Files.readAllBytes(filePath));
-//                try {
-//                new ObjectMapper().readTree(buildIdJson);
-//                exchange.getMessage().setBody(buildIdJson);
-//                } catch (IOException e) {
-//                LOG.error("buildID file contents are not valid JSON");
-//                }
-//                }

@@ -25,7 +25,7 @@ public class ExchangeRateBean {
     private static final Logger LOG = LoggerFactory.getLogger(ExchangeRateBean.class);
 
     public static final String NAMESPACE_KEY = Introspector.decapitalize(ExchangeRateBean.class.getSimpleName());
-    public static final String BUILD_ID_HEADER_KEY = "buildID";
+    public static final String CURRENT_BUILD_ID_HEADER_KEY = "currentBuildID";
     public static final String DEFAULT_BUILD_ID = "";
 
     private String buildID = DEFAULT_BUILD_ID;
@@ -58,6 +58,8 @@ public class ExchangeRateBean {
             resetBean();
         }
 
+        LOG.info("buildID is now: {}", buildID);
+        LOG.info("exchange rates as json is now: {}", getExchangeRatesAsJson());
         return successFlag;
     }
 
@@ -97,9 +99,9 @@ public class ExchangeRateBean {
 
         assert (buildID.equals("") && exchangeRatesAsJson.equals("{}") == false) == false;
 
-        exchange.getIn().setHeader(BUILD_ID_HEADER_KEY, buildID);
-
-        exchange.getIn().setBody(exchangeRatesAsJson);
+        exchange.getMessage().setHeader(CURRENT_BUILD_ID_HEADER_KEY, buildID);
+        exchange.getMessage().setBody(exchangeRatesAsJson);
+        LOG.info("*!*!*!*!*  headers are: {}", exchange.getMessage().getHeaders());
     }
 
     /**

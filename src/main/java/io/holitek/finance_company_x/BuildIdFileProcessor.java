@@ -1,7 +1,6 @@
 package io.holitek.finance_company_x;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
@@ -13,12 +12,14 @@ import org.slf4j.LoggerFactory;
 
 import java.beans.Introspector;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import java.util.Optional;
+
+
+import static io.holitek.finance_company_x.Helpers.fileExists;
 
 
 /**
@@ -31,7 +32,7 @@ public class BuildIdFileProcessor implements Processor {
 
     public static final String NAMESPACE_KEY = Introspector.decapitalize(BuildIdFileProcessor.class.getSimpleName());
 
-    public static final String BUILD_ID_FILE_CONTENTS_HEADER_KEY = "buildIdJson";
+    public static final String BUILD_ID_FILE_CONTENTS_HEADER_KEY = "buildIdFileContents";
 
     public static final String NEW_BUILD_ID_HEADER_KEY = "newBuildID";
 
@@ -61,7 +62,6 @@ public class BuildIdFileProcessor implements Processor {
         } else {
             Path filePath = Paths.get(directory, buildFileNameOptional.get());
             String buildIdJson = new String(Files.readAllBytes(filePath));
-            // this will go boom if the file does not contain valid json or if expected key doesn't exist
 
             Optional<String> buildIdOptional = Optional.ofNullable(
                     JsonPath.using(jsonPathConf).parse(buildIdJson).read( "$.buildID")
@@ -70,20 +70,7 @@ public class BuildIdFileProcessor implements Processor {
             String buildID = buildIdOptional.isEmpty() ? ExchangeRateBean.DEFAULT_BUILD_ID : buildIdOptional.get();
             exchange.getMessage().setHeader(NEW_BUILD_ID_HEADER_KEY, buildID);
             exchange.getMessage().setHeader(BUILD_ID_FILE_CONTENTS_HEADER_KEY, buildIdJson);
-
         }
-    }
-
-    /**
-     * helper to keep the code clean
-     *
-     * @param directory
-     * @param filename
-     * @return
-     */
-    private boolean fileExists(String directory, String filename) {
-        Path path = Paths.get(directory, filename);
-        return Files.exists(path);
     }
 
 }

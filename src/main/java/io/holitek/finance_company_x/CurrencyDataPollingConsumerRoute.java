@@ -5,7 +5,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
 import static io.holitek.finance_company_x.BuildIdFileProcessor.NEW_BUILD_ID_HEADER_KEY;
-import static io.holitek.finance_company_x.ExchangeRateBean.BUILD_ID_HEADER_KEY;
+import static io.holitek.finance_company_x.ExchangeRateBean.CURRENT_BUILD_ID_HEADER_KEY;
+import static io.holitek.finance_company_x.DataFileProcessor.DATA_FILE_CONTENTS_HEADER_KEY;
 
 
 /**
@@ -28,39 +29,25 @@ public class CurrencyDataPollingConsumerRoute extends RouteBuilder {
     public void configure() throws Exception {
 
         from(POLLING_CONSUMER)
-
             // attempt to load buildID file
             .setHeader(DATA_DIRECTORY_HEADER_KEY, simple(DATA_DIRECTORY))
             .to(BUILD_ID_FILE_PROCESSOR)
-
-//             // eject if buildIdFileProcessor returns empty json
-//             .choice()
-//                 .when(body().isEqualTo("{}"))
-//                    .stop()
-//             .end()
-
-            // set buildID to either what's in the file or to an empty string (default for ExchangeRateBean)
-//            .choice()
-//                .when().jsonpath("$.buildID", true)
-//                    .setHeader(NEW_BUILD_ID_HEADER_KEY).jsonpath("$.buildID")
-//                .endChoice()
-//            .otherwise()
-//                .setHeader(NEW_BUILD_ID_HEADER_KEY, simple(ExchangeRateBean.DEFAULT_BUILD_ID))
-//            .end()
-//            .log(LoggingLevel.INFO, "new buildID is: ${headers." + NEW_BUILD_ID_HEADER_KEY + "}")
-
             // grab the current exchange rate data from the container bean
             .to(EXCHANGE_RATE_BEAN)
-            .log(LoggingLevel.INFO, "current buildID is: ${headers." + BUILD_ID_HEADER_KEY + "}")
-
+            .log(LoggingLevel.INFO, "exchange headers are ${headers}")
             // compare new to current buildID, taking action only on delta
             .choice()
-                .when(header(NEW_BUILD_ID_HEADER_KEY).isNotEqualTo(header(BUILD_ID_HEADER_KEY)))
+                .when(header(NEW_BUILD_ID_HEADER_KEY).isNotEqualTo(header(CURRENT_BUILD_ID_HEADER_KEY)))
                     .to(DATA_FILE_PROCESSOR)
+                    .to(EXCHANGE_RATE_BEAN +
+                            "?method=setExchangeRates(" +
+                                "${headers." + NEW_BUILD_ID_HEADER_KEY + "}," +
+                                "${headers." + DATA_FILE_CONTENTS_HEADER_KEY + "}" +
+                            ")"
+                    )
                 .endChoice()
             .otherwise()
                 .log(LoggingLevel.INFO, "taking no action, build IDs are same")
             .end();
-
     }
 }
