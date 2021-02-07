@@ -49,7 +49,7 @@ public class DataFileProcessor implements Processor {
                                            .getHeader(CurrencyDataPollingConsumerRoute.DATA_DIRECTORY_HEADER_KEY);
 
         String buildIdFileAsJson = (String)exchange.getMessage().getHeader(BUILD_ID_FILE_CONTENTS_HEADER_KEY);
-
+LOG.info(directory);
         Optional<String> dataFileNameOptional = Optional.ofNullable(
                 JsonPath.using(jsonPathConf).parse(buildIdFileAsJson).read("$.FileName")
         );

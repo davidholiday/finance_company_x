@@ -34,16 +34,16 @@ public class BuildIdFileProcessorTest extends CamelTestSupport {
     @BeforeEach
     void beforeEach() {
         context().getPropertiesComponent()
-                .setLocation("classpath:application.test.properties");
+                 .setLocation("classpath:application.test.properties");
 
         context().getRegistry()
-                .bind(BuildIdFileProcessor.NAMESPACE_KEY, new BuildIdFileProcessor());
+                 .bind(BuildIdFileProcessor.NAMESPACE_KEY, new BuildIdFileProcessor());
 
         // at runtime, the route the BuildFileProcessor is a part of will set the data directory in the exchange header.
         //   this will enable us to simulate that for testing
         String buildIdRelativeDirectory = context().getPropertiesComponent()
-                                              .resolveProperty("buildID.directory")
-                                              .orElse("");
+                                                   .resolveProperty("buildID.directory")
+                                                   .orElse("");
 
         assert (buildIdRelativeDirectory.isEmpty() == false);
         Path buildIdPath = Path.of(System.getProperty("user.dir"), buildIdRelativeDirectory);
