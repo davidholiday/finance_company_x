@@ -35,23 +35,35 @@ public class CurrencyDataPollingConsumerRoute extends RouteBuilder {
         from(POLLING_CONSUMER)
             .id(NAMESPACE_KEY)
             .log(LoggingLevel.INFO, "checking for exchange rate updates...")
+
             // attempt to load buildID file
             .setHeader(DATA_DIRECTORY_HEADER_KEY, simple(DATA_DIRECTORY))
             .to(BUILD_ID_FILE_PROCESSOR)
+
             // if no buildID was found - no need to keep going
             .choice()
                 .when(header(NEW_BUILD_ID_HEADER_KEY).isNull())
                     .log(LoggingLevel.WARN, "halting message due to missing buildID in message header...")
                     .stop()
             .end()
+
             // grab the current exchange rate data from the container bean
             .to(EXCHANGE_RATE_BEAN)
             .log(LoggingLevel.DEBUG, "exchange headers are ${headers}")
+
             // compare new to current buildID, taking action only on delta
             .choice()
                 .when(header(NEW_BUILD_ID_HEADER_KEY).isNotEqualTo(header(CURRENT_BUILD_ID_HEADER_KEY)))
                     .log(LoggingLevel.INFO, "new buildID does not equal current buildID, updating bean...")
                     .to(DATA_FILE_PROCESSOR)
+
+                    // if no dataFileContents found - eject
+                    .choice()
+                        .when(header(DATA_FILE_CONTENTS_HEADER_KEY).isNull())
+                            .log(LoggingLevel.WARN, "halting message due to missing dataFile in header...")
+                            .stop()
+                    .end()
+
                     .to(EXCHANGE_RATE_BEAN +
                             "?method=setExchangeRates(" +
                                 "${headers." + NEW_BUILD_ID_HEADER_KEY + "}," +
