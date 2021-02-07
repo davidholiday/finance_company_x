@@ -17,7 +17,8 @@ import java.util.Optional;
 
 
 /**
- * if present - will load the json contents of the buildID file into the message header
+ * if present - will load the json contents of the buildID file into the message body. will except if build file
+ * property is not specified. if specified file is not found, message body will be returned with empty json string
  */
 public class BuildIdFileProcessor implements Processor {
 
@@ -41,19 +42,16 @@ public class BuildIdFileProcessor implements Processor {
                                                          .resolveProperty("buildID_filename");
 
         if (buildFileNameOptional.isEmpty()) {
-            throw new IllegalStateException("property buildID_filename must not be emtpy");
+            throw new IllegalArgumentException("property buildID_filename must not be emtpy");
         }
 
         Path filePath = Paths.get(directory, buildFileNameOptional.get());
-
         if (Files.exists(filePath) == false) {
-            throw new IllegalStateException("can not find buildID file " + filePath);
+            LOG.warn("could not find buildID file {}. populating message body with empty json string", filePath);
+            exchange.getMessage().setBody("{}");
         } else {
             String buildIdJson = new String(Files.readAllBytes(filePath));
-            exchange.getMessage().setHeader(
-                    BUILD_ID_FILE_CONTENTS_HEADER_KEY,
-                    buildIdJson
-            );
+            exchange.getMessage().setBody(buildIdJson);
         }
     }
 }

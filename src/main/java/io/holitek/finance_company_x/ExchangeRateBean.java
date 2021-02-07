@@ -20,14 +20,15 @@ import org.slf4j.LoggerFactory;
 /**
  * cache bean that stores and provides means to access current exchange rates
  */
-public class CurrentExchangeRateBean {
+public class ExchangeRateBean {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CurrentExchangeRateBean.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExchangeRateBean.class);
 
-    public static final String NAMESPACE_KEY = Introspector.decapitalize(CurrentExchangeRateBean.class.getSimpleName());
+    public static final String NAMESPACE_KEY = Introspector.decapitalize(ExchangeRateBean.class.getSimpleName());
     public static final String BUILD_ID_HEADER_KEY = "buildID";
+    public static final String DEFAULT_BUILD_ID = "";
 
-    private String buildID = new String();
+    private String buildID = DEFAULT_BUILD_ID;
     private Map<String, Double> exchangeRateMap = new HashMap<>();
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -64,7 +65,7 @@ public class CurrentExchangeRateBean {
      * resets all bean variables to their default values
      */
     public void resetBean() {
-        buildID = ""; // purposefully not using the setter...
+        buildID = DEFAULT_BUILD_ID; // purposefully not using the setter...
         exchangeRateMap.clear();
     }
 

@@ -50,10 +50,16 @@
       <artifactId>camel-bean</artifactId>
     </dependency>
 
-    <!-- -->
+    <!-- for querying json - akin to xpath for xml -->
     <dependency>
       <groupId>org.apache.camel</groupId>
-      <artifactId>camel-log</artifactId>
+      <artifactId>camel-jsonpath</artifactId>
+    </dependency>
+
+    <!-- using this for json mapping -->
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-jackson</artifactId>
     </dependency>
 
     <!-- -->
@@ -68,10 +74,10 @@
       <artifactId>camel-file</artifactId>
     </dependency>
 
-    <!-- using this for json mapping -->
+    <!-- camel logging hook-->
     <dependency>
       <groupId>org.apache.camel</groupId>
-      <artifactId>camel-jackson</artifactId>
+      <artifactId>camel-log</artifactId>
     </dependency>
 
     <!-- logging -->
