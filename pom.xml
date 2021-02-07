@@ -38,6 +38,7 @@
       <artifactId>camel-core-engine</artifactId>
     </dependency>
 
+    <!-- for bootstrapping a stand alone camel app -->
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-main</artifactId>
@@ -48,14 +49,26 @@
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-bean</artifactId>
     </dependency>
+
+    <!-- -->
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-log</artifactId>
     </dependency>
+
+    <!-- -->
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-timer</artifactId>
     </dependency>
+
+    <!-- for handling files in camel routes -->
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-file</artifactId>
+    </dependency>
+
+    <!-- using this for json mapping -->
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-jackson</artifactId>
@@ -113,7 +126,7 @@
         <version>3.7.1</version>
         <configuration>
           <logClasspath>true</logClasspath>
-          <mainClass>io.holitek.MyApplication</mainClass>
+          <mainClass>io.holitek.finance_company_x.App</mainClass>
         </configuration>
       </plugin>
 

@@ -1,4 +1,4 @@
-package io.holitek;
+package io.holitek.finance_company_x;
 
 
 import java.beans.Introspector;
