@@ -144,7 +144,65 @@ public class DataFileProcessorTest extends CamelTestSupport {
         assertMockEndpointsSatisfied();
     }
 
+    @Test
+    @DisplayName("checks that the processor takes no action if the filename can't be parsed from buildID file contents")
+    public void testDataFileProcessorNoFilenameInBuildIdFile() throws Exception {
+
+        // set expectations of output
+        getMockEndpoint("mock:result").expectedHeaderReceived(
+                DataFileProcessor.DATA_FILE_CONTENTS_HEADER_KEY,
+                this.dataFileContents
+        );
 
 
+        Map<String, Object> exchangeHeaders = Map.of(
+                BuildIdFileProcessor.BUILD_ID_FILE_CONTENTS_HEADER_KEY, this.buildIdContentsNoFilename,
+                CurrencyDataPollingConsumerRoute.DATA_DIRECTORY_HEADER_KEY, this.dataDirectory.toString()
+        );
+
+        // do the thing
+        template.sendBodyAndHeaders(
+                "direct:start",
+                "",
+                exchangeHeaders
+        );
+
+        getMockEndpoint("mock:result").assertIsNotSatisfied();
+    }
+
+    @Test
+    @DisplayName("checks that the processor takes no action if the file from buildID file can't be found")
+    public void testDataFileProcessorBadFilenameInBuildIdFile() throws Exception {
+
+        // set expectations of output
+        getMockEndpoint("mock:result").expectedHeaderReceived(
+                DataFileProcessor.DATA_FILE_CONTENTS_HEADER_KEY,
+                this.dataFileContents
+        );
+
+
+        Map<String, Object> exchangeHeaders = Map.of(
+                BuildIdFileProcessor.BUILD_ID_FILE_CONTENTS_HEADER_KEY, this.buildIdContentsBadFilename,
+                CurrencyDataPollingConsumerRoute.DATA_DIRECTORY_HEADER_KEY, this.dataDirectory.toString()
+        );
+
+        // do the thing
+        template.sendBodyAndHeaders(
+                "direct:start",
+                "",
+                exchangeHeaders
+        );
+
+        getMockEndpoint("mock:result").assertIsNotSatisfied();
+    }
 
 }
+
+
+
+
+
+
+
+
+
