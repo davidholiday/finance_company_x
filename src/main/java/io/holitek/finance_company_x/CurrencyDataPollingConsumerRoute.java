@@ -64,6 +64,7 @@ public class CurrencyDataPollingConsumerRoute extends RouteBuilder {
                             .stop()
                     .end()
 
+                    // update bean with new exchange rate data
                     .to(EXCHANGE_RATE_BEAN +
                             "?method=setExchangeRates(" +
                                 "${headers." + NEW_BUILD_ID_HEADER_KEY + "}," +
