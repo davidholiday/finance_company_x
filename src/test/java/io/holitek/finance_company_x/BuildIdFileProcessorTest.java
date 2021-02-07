@@ -6,10 +6,7 @@ import com.jayway.jsonpath.JsonPath;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,9 +87,9 @@ public class BuildIdFileProcessorTest extends CamelTestSupport {
 
     @Test
     @DisplayName("checks that the processor properly parses a well formed buildID file")
-    public void testExchangeHandlerHappyPath() throws Exception {
+    public void testBuildIdFileProcessorHappyPath() throws Exception {
 
-        //
+        // set expectations of output
         getMockEndpoint("mock:result").expectedHeaderReceived(
                 BuildIdFileProcessor.NEW_BUILD_ID_HEADER_KEY,
                 this.buildID
@@ -105,9 +102,11 @@ public class BuildIdFileProcessorTest extends CamelTestSupport {
 
         getMockEndpoint("mock:result").expectedBodiesReceived("");
 
-        //
+
+        // set which test file to use
         setbuildIdFilenameHeader("buildID.file.good");
 
+        // do the thing
         template.sendBodyAndHeader(
                 "direct:start",
                 "",
@@ -115,6 +114,84 @@ public class BuildIdFileProcessorTest extends CamelTestSupport {
         );
 
         assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    @DisplayName("checks that no action is taken in case of no buildID found in build ID file")
+    public void testBuildIdFileProcessorNoBuildIdInBuildIdFile() throws Exception {
+
+        // set expectations of output
+        getMockEndpoint("mock:result").expectedHeaderReceived(
+                BuildIdFileProcessor.NEW_BUILD_ID_HEADER_KEY,
+                ExchangeRateBean.DEFAULT_BUILD_ID
+        );
+
+        getMockEndpoint("mock:result").expectedBodiesReceived("");
+
+        // set which test file to use
+        setbuildIdFilenameHeader("buildID.file.no-buildID");
+
+        // do the thing
+        template.sendBodyAndHeader(
+                "direct:start",
+                "",
+                CurrencyDataPollingConsumerRoute.DATA_DIRECTORY_HEADER_KEY, this.dataDirectory.toString()
+        );
+
+        assertMockEndpointsSatisfied();
+
+    }
+
+    @Test
+    @DisplayName("checks that action IS taken regardless of whether or not a filename field is found in the build file")
+    public void testBuildIdFileProcessorNoFilenameFieldInBuildIdFile() throws Exception {
+
+        // set expectations of output
+        getMockEndpoint("mock:result").expectedHeaderReceived(
+                BuildIdFileProcessor.NEW_BUILD_ID_HEADER_KEY,
+                this.buildID
+        );
+
+        getMockEndpoint("mock:result").expectedBodiesReceived("");
+
+        // set which test file to use
+        setbuildIdFilenameHeader("buildID.file.no-filename");
+
+        // do the thing
+        template.sendBodyAndHeader(
+                "direct:start",
+                "",
+                CurrencyDataPollingConsumerRoute.DATA_DIRECTORY_HEADER_KEY, this.dataDirectory.toString()
+        );
+
+        assertMockEndpointsSatisfied();
+
+    }
+
+    @Test
+    @DisplayName("checks that no action is taken if the buildID file is not pareable as json")
+    public void testBuildIdFileProcessorBuildIdFileNotParsableAsJson() throws Exception {
+
+        // set expectations of output
+        getMockEndpoint("mock:result").expectedHeaderReceived(
+                BuildIdFileProcessor.NEW_BUILD_ID_HEADER_KEY,
+                ExchangeRateBean.DEFAULT_BUILD_ID
+        );
+
+        getMockEndpoint("mock:result").expectedBodiesReceived("");
+
+        // set which test file to use
+        setbuildIdFilenameHeader("buildID.file.not-json");
+
+        // do the thing
+        template.sendBodyAndHeader(
+                "direct:start",
+                "",
+                CurrencyDataPollingConsumerRoute.DATA_DIRECTORY_HEADER_KEY, this.dataDirectory.toString()
+        );
+
+        assertMockEndpointsSatisfied();
+
     }
 
 
