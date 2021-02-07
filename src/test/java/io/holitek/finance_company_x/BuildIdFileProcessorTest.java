@@ -117,7 +117,30 @@ public class BuildIdFileProcessorTest extends CamelTestSupport {
     }
 
     @Test
-    @DisplayName("checks that no action is taken in case of no buildID found in build ID file")
+    @DisplayName("checks that no action is taken in case of no buildID file")
+    public void testBuildIdFileProcessorFileNotFound() throws Exception {
+
+        // set expectations of output
+        getMockEndpoint("mock:result").expectedHeaderReceived(
+                BuildIdFileProcessor.NEW_BUILD_ID_HEADER_KEY,
+                ExchangeRateBean.DEFAULT_BUILD_ID
+        );
+
+        // set which test file to use
+        setbuildIdFilenameHeader("buildID.file.not-real");
+
+        // do the thing
+        template.sendBodyAndHeader(
+                "direct:start",
+                "",
+                CurrencyDataPollingConsumerRoute.DATA_DIRECTORY_HEADER_KEY, this.dataDirectory.toString()
+        );
+
+        getMockEndpoint("mock:result").assertIsNotSatisfied();
+    }
+
+    @Test
+    @DisplayName("checks that action is taken with default buildID in case of no buildID found in build ID file")
     public void testBuildIdFileProcessorNoBuildIdInBuildIdFile() throws Exception {
 
         // set expectations of output
@@ -169,7 +192,7 @@ public class BuildIdFileProcessorTest extends CamelTestSupport {
     }
 
     @Test
-    @DisplayName("checks that no action is taken if the buildID file is not pareable as json")
+    @DisplayName("checks that action is taken with default buildID in case of malformed file")
     public void testBuildIdFileProcessorBuildIdFileNotParsableAsJson() throws Exception {
 
         // set expectations of output
