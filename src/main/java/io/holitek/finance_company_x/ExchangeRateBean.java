@@ -25,8 +25,8 @@ public class ExchangeRateBean {
     private static final Logger LOG = LoggerFactory.getLogger(ExchangeRateBean.class);
 
     public static final String NAMESPACE_KEY = Introspector.decapitalize(ExchangeRateBean.class.getSimpleName());
-    public static final String CURRENT_BUILD_ID_HEADER_KEY = "currentBuildID";
     public static final String DEFAULT_BUILD_ID = "";
+    public static final String CURRENT_BUILD_ID_HEADER_KEY = "currentBuildId";
 
     private String buildID = DEFAULT_BUILD_ID;
     private Map<String, Double> exchangeRateMap = new HashMap<>();
@@ -44,6 +44,7 @@ public class ExchangeRateBean {
      * @return
      */
     public boolean setExchangeRates(String buildID, String exchangeRateJson) {
+        LOG.info("attempting to update ExchangeRateBean values...");
         boolean setBuildIdSuccessFlag = setBuildID(buildID);
         boolean setExchangeRateMapSuccessFlag = setExchangeRateMap(exchangeRateJson);
         boolean successFlag = setBuildIdSuccessFlag && setExchangeRateMapSuccessFlag;
@@ -58,8 +59,9 @@ public class ExchangeRateBean {
             resetBean();
         }
 
-        LOG.info("buildID is now: {}", buildID);
+        LOG.info("buildID is now: {}", getBuildID());
         LOG.info("exchange rates as json is now: {}", getExchangeRatesAsJson());
+        LOG.info("returning successFlag: {}", successFlag);
         return successFlag;
     }
 
@@ -97,11 +99,11 @@ public class ExchangeRateBean {
         String buildID = getBuildID();
         String exchangeRatesAsJson = getExchangeRatesAsJson();
 
+        // there should never be a case where we have exchange data absent a buildID
         assert (buildID.equals("") && exchangeRatesAsJson.equals("{}") == false) == false;
 
         exchange.getMessage().setHeader(CURRENT_BUILD_ID_HEADER_KEY, buildID);
-        exchange.getMessage().setBody(exchangeRatesAsJson);
-        LOG.info("*!*!*!*!*  headers are: {}", exchange.getMessage().getHeaders());
+        exchange.getIn().setBody(exchangeRatesAsJson);
     }
 
     /**

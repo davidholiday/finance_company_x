@@ -13,6 +13,7 @@ public final class App {
 
     public static void main(String[] args) throws Exception {
         Main main = new Main();
+        main.configure().addConfiguration(new AppConfig());
         main.configure().addRoutesBuilder(CurrencyDataPollingConsumerRoute.class);
         main.run(args);
     }

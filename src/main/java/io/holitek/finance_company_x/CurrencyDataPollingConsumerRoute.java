@@ -5,8 +5,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
 import static io.holitek.finance_company_x.BuildIdFileProcessor.NEW_BUILD_ID_HEADER_KEY;
-import static io.holitek.finance_company_x.ExchangeRateBean.CURRENT_BUILD_ID_HEADER_KEY;
 import static io.holitek.finance_company_x.DataFileProcessor.DATA_FILE_CONTENTS_HEADER_KEY;
+import static io.holitek.finance_company_x.ExchangeRateBean.CURRENT_BUILD_ID_HEADER_KEY;
 
 
 /**
@@ -33,6 +33,7 @@ public class CurrencyDataPollingConsumerRoute extends RouteBuilder {
             .setHeader(DATA_DIRECTORY_HEADER_KEY, simple(DATA_DIRECTORY))
             .to(BUILD_ID_FILE_PROCESSOR)
             // grab the current exchange rate data from the container bean
+            //.setHeader(CURRENT_BUILD_ID_HEADER_KEY).method(EXCHANGE_RATE_BEAN, "getBuildID").
             .to(EXCHANGE_RATE_BEAN)
             .log(LoggingLevel.INFO, "exchange headers are ${headers}")
             // compare new to current buildID, taking action only on delta
