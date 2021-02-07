@@ -1,8 +1,6 @@
 package io.holitek.finance_company_x;
 
 
-import com.jayway.jsonpath.JsonPath;
-
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
 

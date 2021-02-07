@@ -4,6 +4,7 @@ package io.holitek.finance_company_x;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
