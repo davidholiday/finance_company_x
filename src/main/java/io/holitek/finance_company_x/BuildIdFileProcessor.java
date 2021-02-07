@@ -17,7 +17,7 @@ import java.util.Optional;
 
 
 /**
- *
+ * if present - will load the json contents of the buildID file into the message header
  */
 public class BuildIdFileProcessor implements Processor {
 
@@ -25,9 +25,11 @@ public class BuildIdFileProcessor implements Processor {
 
     public static final String NAMESPACE_KEY = Introspector.decapitalize(BuildIdFileProcessor.class.getSimpleName());
 
+    public static final String BUILD_ID_FILE_CONTENTS_HEADER_KEY = "buildIdJson";
+
+
     @Override
     public void process(Exchange exchange) throws Exception {
-
 
         String directory = (String)exchange.getMessage()
                                            .getHeader(CurrencyDataPollingConsumerRoute.DATA_DIRECTORY_HEADER_KEY);
@@ -46,7 +48,12 @@ public class BuildIdFileProcessor implements Processor {
 
         if (Files.exists(filePath) == false) {
             throw new IllegalStateException("can not find buildID file " + filePath);
+        } else {
+            String buildIdJson = new String(Files.readAllBytes(filePath));
+            exchange.getMessage().setHeader(
+                    BUILD_ID_FILE_CONTENTS_HEADER_KEY,
+                    buildIdJson
+            );
         }
-
     }
 }
