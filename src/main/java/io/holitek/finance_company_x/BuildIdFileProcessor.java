@@ -2,6 +2,9 @@ package io.holitek.finance_company_x;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
@@ -30,6 +33,8 @@ public class BuildIdFileProcessor implements Processor {
 
     public static final String BUILD_ID_FILE_CONTENTS_HEADER_KEY = "buildIdJson";
 
+    public static final String NEW_BUILD_ID_HEADER_KEY = "newBuildID";
+
 
     /**
      *
@@ -38,8 +43,9 @@ public class BuildIdFileProcessor implements Processor {
      */
     @Override
     public void process(Exchange exchange) throws Exception {
-        // populate exchange body with default value of empty json string to keep the code DRY
-        exchange.getMessage().setBody("{}");
+
+        // this to prevent the json parser from going boom when a key isn't found
+        Configuration jsonPathConf = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
 
         String directory = (String)exchange.getMessage()
                                            .getHeader(CurrencyDataPollingConsumerRoute.DATA_DIRECTORY_HEADER_KEY);
@@ -55,12 +61,16 @@ public class BuildIdFileProcessor implements Processor {
         } else {
             Path filePath = Paths.get(directory, buildFileNameOptional.get());
             String buildIdJson = new String(Files.readAllBytes(filePath));
-            try {
-                new ObjectMapper().readTree(buildIdJson);
-                exchange.getMessage().setBody(buildIdJson);
-            } catch (IOException e) {
-                LOG.error("buildID file contents are not valid JSON");
-            }
+            // this will go boom if the file does not contain valid json or if expected key doesn't exist
+
+            Optional<String> buildIdOptional = Optional.ofNullable(
+                    JsonPath.using(jsonPathConf).parse(buildIdJson).read( "$.buildID")
+            );
+
+            String buildID = buildIdOptional.isEmpty() ? ExchangeRateBean.DEFAULT_BUILD_ID : buildIdOptional.get();
+            exchange.getMessage().setHeader(NEW_BUILD_ID_HEADER_KEY, buildID);
+            exchange.getMessage().setHeader(BUILD_ID_FILE_CONTENTS_HEADER_KEY, buildIdJson);
+
         }
     }
 
