@@ -57,7 +57,7 @@ public class DataFileProcessor implements Processor {
         // update exchange rates iff data file exists and is valid json
         // TODO add more validation of dataFileContentsJson as needed...
         if (dataFileNameOptional.isEmpty() || fileExists(directory, dataFileNameOptional.get()) == false) {
-            LOG.error("data filename can't can't be resolved from buildID file contents");
+            LOG.error("data file can't can't be parsed from buildID file contents");
         } else {
             Path dataFilePath = Paths.get(directory, dataFileNameOptional.get());
             String dataFileContentsJson = new String(Files.readAllBytes(dataFilePath));
