@@ -22,7 +22,7 @@ When the app is running, it will poll a given directory at a given frequency (al
 ### run the app
 The app can be run from the project root directory with the following command:
 ```shell
-$ mvn:camel run
+$ mvn camel:run
 ```
 
 ### how do I?
